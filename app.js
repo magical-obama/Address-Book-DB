@@ -2,6 +2,7 @@ const express = require('express');
 const path = require('path');
 const ejs = require('ejs');
 const bodyParser = require('body-parser');
+const helmet = require('helmet');
 
 const app = express();
 
@@ -12,17 +13,13 @@ app.set('view engine', 'ejs');
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
+app.use(helmet());
 app.use('/', express.static(path.join(__dirname, "public")));
 
-app.use('/', (_req, res, next) => {
-    res.setHeader("X-Powered-By", "Me :)");
-    next();
-});
-
-app.use((err, req, res, next) => {
-    console.error(err.stack);
-    res.status(500).send('Something broke!');
-  });
+// app.use((err, req, res, next) => {
+//     console.error(err.stack);
+//     res.status(500).send('Something broke!');
+// });
 
 app.get('/', (req, res) => {
     var title = "Homepage";
