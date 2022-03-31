@@ -1,6 +1,6 @@
 const express = require('express');
 const path = require('path');
-const ejs = require('ejs');
+// const ejs = require('ejs');
 const bodyParser = require('body-parser');
 const helmet = require('helmet');
 
@@ -27,6 +27,11 @@ app.get('/', (req, res) => {
         title = req.query.title;
     }
     res.render("index", { title: title});
+});
+
+// get about page from /about and about.ejs
+app.get('/about', (req, res) => {
+    res.render("about");
 });
 
 app.listen(PORT, () => {
