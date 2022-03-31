@@ -17,7 +17,8 @@
     "ejs": "^3.1.6",
     "errorhandler": "^1.5.1",
     "express": "^4.17.3",
-    "helmet": "^5.0.2"
+    "helmet": "^5.0.2",
+    "mongoose": "^6.2.9"
   },
   "devDependencies": {
     "nodemon": "^2.0.15"

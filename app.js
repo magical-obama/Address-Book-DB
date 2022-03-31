@@ -4,7 +4,6 @@ const errorhandler = require('errorhandler');
 const bodyParser = require('body-parser');
 const helmet = require('helmet');
 const indexRouter = require('./routes/index');
-
 const app = express();
 
 require("dotenv").config();
