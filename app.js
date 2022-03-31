@@ -3,7 +3,7 @@ const path = require('path');
 const errorhandler = require('errorhandler');
 const bodyParser = require('body-parser');
 const helmet = require('helmet');
-const pages = require('./routes/pages');
+const indexRouter = require('./routes/index');
 
 const app = express();
 
@@ -21,7 +21,31 @@ if (process.env.NODE_ENV === 'development') {
     app.use(errorhandler());
 }
 
-app.use('/', pages);
+app.use('/', indexRouter);
+
+// 404 error handler
+// file deepcode ignore NoRateLimitingForExpensiveWebOperation: <please specify a reason of ignoring this>
+app.use(function (req, res, _next) {
+    res.status(404);
+
+  // respond with html page
+  if (req.accepts('html')) {
+    res.render('404', { url: req.url });
+    return;
+  }
+
+  // respond with json
+  if (req.accepts('json')) {
+    res.json({
+      code: 404,
+      error: 'Not found'
+    });
+    return;
+  }
+
+  // default to plain-text. send()
+  res.type('txt').send('Not found');
+});
 
 app.listen(PORT, () => {
     console.log(`Listening on http://localhost:${PORT}`);
