@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "serve": "node .",
-    "dev": "nodemon ."
+    "dev": "set NODE_ENV=development && nodemon ."
   },
   "keywords": [],
   "author": "",
@@ -15,6 +15,7 @@
     "body-parser": "^1.19.2",
     "dotenv": "^16.0.0",
     "ejs": "^3.1.6",
+    "errorhandler": "^1.5.1",
     "express": "^4.17.3",
     "helmet": "^5.0.2"
   },

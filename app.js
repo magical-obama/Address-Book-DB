@@ -1,6 +1,6 @@
 const express = require('express');
 const path = require('path');
-// const ejs = require('ejs');
+const errorhandler = require('errorhandler');
 const bodyParser = require('body-parser');
 const helmet = require('helmet');
 
@@ -15,24 +15,23 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(helmet());
 app.use('/', express.static(path.join(__dirname, "public")));
-
-// app.use((err, req, res, next) => {
-//     console.error(err.stack);
-//     res.status(500).send('Something broke!');
-// });
+if (process.env.NODE_ENV === 'development') {
+    app.use(errorhandler());
+}
 
 app.get('/', (req, res) => {
-    var title = "Homepage";
-    if (req.query.title) {
-        title = req.query.title;
-    }
-    res.render("index", { title: title});
+    res.render("index");
 });
 
 // get about page from /about and about.ejs
 app.get('/about', (req, res) => {
     res.render("about");
 });
+
+// app.use((err, req, res, next) => {
+//     console.log(err);
+//     res.status(err.status).render("error", { error: err });
+// });
 
 app.listen(PORT, () => {
     console.log(`Listening on http://localhost:${PORT}`);
