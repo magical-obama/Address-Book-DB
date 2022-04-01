@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%- include('partials/head.ejs') %>
+    <title>Add a Contact</title>
+</head>
+<body>
+    <form action="/add_contact" method="post">
+        <label for="name">Name:</label>
+        <input type="text" name="name" id="name">
+        <br>
+        <label for="email">Email:</label>
+        <input type="email" name="email" id="email">
+        <br>
+        <label for="phone">Phone:</label>
+        <input type="text" name="phone" id="phone">
+        <br>
+        <label for="address">Address: </label>
+        <input type="text" name="address" id="address">
+        <br>
+        <label for="birthday">Birthday: </label>
+        <input type="date" name="birthday" id="birthday">
+        <br>
+        <input type="submit" value="Add Contact">
+    </form>
+</body>
+</html>
