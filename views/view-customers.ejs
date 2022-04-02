@@ -8,16 +8,35 @@
 <body>
     <% customers.forEach((item, index) => { %>
         <div class="customer">
-            <h2><%= item.name %></h2>
-            <p><%= item.username %></p>
-            <p><%= item.address %></p>
+            <h2>Name: <%= item.name %></h2>
+            <p>Username: <%= item.username %></p>
+            <p>Address: <%= item.address %></p>
+            <p>Birthdate: <%= item.birthdate %></p>
+            <p>Email: <%= item.email %></p>
+            <p>Accounts</p>
             <ul>
                 <% item.accounts.forEach((accItem, index) => { %>
                     <li><%= accItem %></li>
                 <% }) %>
             </ul>
-            <p><%= item.email %></p>
-            <p><%= item.birthdate %></p>
+            <ul>
+                <% for (const [key, tierItem] of Object.entries(item.tier_and_details)) { %>
+                    <li class="tier-item">
+                        <p>Tier: <%= tierItem.tier %></p>
+                        <p>Benefits:</p>
+                        <ul>
+                        <% tierItem.benefits.forEach((benefitItem, index) => { %>
+                            <li><%= benefitItem %></li>
+                        </ul>
+                        <% }) %>
+                        <% if (tierItem.active == true) { %>
+                            <p>Active: Yes</p>
+                        <% } else { %>
+                            <p>Active: No</p>
+                        <% } %>
+                <% } %>
+                </li>
+            </ul>
         </div>
     <% }) %>
 </body>

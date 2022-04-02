@@ -6,6 +6,8 @@ const csrf = require('csurf');
 const bodyParser = require('body-parser');
 const helmet = require('helmet');
 const indexRouter = require('./routes/index');
+const testRouter = require('./routes/test');
+require('./db/connect');
 const app = express();
 
 var csrfProtection = csrf({ cookie: true });
@@ -27,6 +29,7 @@ if (process.env.NODE_ENV === 'development') {
 
 //app.use(csrfProtection);
 app.use('/', indexRouter);
+app.use('/test', testRouter);
 
 // 404 error handler
 // file deepcode ignore NoRateLimitingForExpensiveWebOperation: <please specify a reason of ignoring this>

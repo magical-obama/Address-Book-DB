@@ -1,10 +1,11 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../db/connection');
 const ContactModel = require('../db/models/contact');
 const { body, validationResult } = require('express-validator');
 const ejs = require('ejs');
 const path = require('path');
+const mongoose = require('mongoose');
+const db = mongoose.connection;
 
 // Home page route.
 // file deepcode ignore NoRateLimitingForExpensiveWebOperation: <please specify a reason of ignoring this>
@@ -36,15 +37,5 @@ router.post('/add_contact', (req, res) => {
     });
     res.redirect('/add_contact');
 });
-
-router.get('/view_customers', async function (_req, res) {
-    var customers = await db.collection('customers').find().toArray();
-    if (customers.length != 0) {
-        res.render('view-customers', { customers: customers });
-    } else {
-        res.render('500');
-    }
-});
-
 
 module.exports = router;
