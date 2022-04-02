@@ -27,15 +27,21 @@ router.get('/add_contact', function (_req, res) {
 
 router.post('/add_contact', (req, res) => {
     var user = new ContactModel(req.body);
-    console.log(user);
-    db.collection('contacts').insertOne(user, (err, result) => {
-        if (err) {
-            console.error('An error has occurred');
-        } else {
-            console.log("Added new contact");
-        }
-    });
-    res.redirect('/add_contact');
+    if (user.name != "") {
+        console.log(user);
+        db.collection('contacts').insertOne(user, (err, result) => {
+            if (err) {
+                console.error('An error has occurred');
+            } else {
+                console.log("Added new contact");
+            }
+        });
+        res.redirect('/add_contact');
+    } else {
+        res.send({
+            message: "Empty name"
+        });
+    }
 });
 
 module.exports = router;

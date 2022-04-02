@@ -1,7 +1,6 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const router = express.Router();
-// const db = require('../db/connection');
 const CustomerModel = require('../db/models/customer');
 const db = mongoose.connection;
 

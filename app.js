@@ -7,10 +7,11 @@ const bodyParser = require('body-parser');
 const helmet = require('helmet');
 const indexRouter = require('./routes/index');
 const testRouter = require('./routes/test');
+const mongoose = require('mongoose');
 require('./db/connect');
 const app = express();
 
-var csrfProtection = csrf({ cookie: true });
+// var csrfProtection = csrf({ cookie: true });
 
 require("dotenv").config();
 const PORT = process.env.PORT || 80;
@@ -27,7 +28,7 @@ if (process.env.NODE_ENV === 'development') {
     app.use(errorhandler());
 }
 
-//app.use(csrfProtection);
+// app.use(csrfProtection);
 app.use('/', indexRouter);
 app.use('/test', testRouter);
 
@@ -51,10 +52,30 @@ app.use(function (req, res, _next) {
     return;
   }
 
-  // default to plain-text. send()
+  // default to plain-text.send()
   res.type('txt').send('Not found');
 });
 
 app.listen(PORT, () => {
     console.log(`Listening on http://localhost:${PORT}`);
 });
+
+// function gracefulShutdown(callback) {
+//     mongoose.disconnect().then(() => {
+//         console.log('Mongoose connection disconnected');
+//     });
+//     console.log('Mongoose connection disconnected');
+//     callback();
+// }
+
+// process.once('SIGUSR2', () => {
+//   gracefulShutdown(() => {
+//     process.kill(process.pid, 'SIGUSR2');
+//   });
+// });
+
+// process.on('exit', gracefulShutdown);
+// process.on('SIGINT', gracefulShutdown);
+// process.on('SIGUSR1', gracefulShutdown);
+// process.on('SIGUSR2', gracefulShutdown);
+// process.on('uncaughtException', gracefulShutdown);
