@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <%- include('partials/head.ejs') %>
+    <link rel="stylesheet" href="/css/add-contact.css">
     <title>Add a Contact</title>
 </head>
 <body>
@@ -12,14 +13,14 @@
         <label for="email">Email:</label>
         <input type="email" name="email" id="email">
         <br>
-        <label for="phone">Phone:</label>
-        <input type="text" name="phone" id="phone">
+        <label for="phonenumber">Phone:</label>
+        <input type="tel" name="phonenumber" id="phonenumber">
         <br>
         <label for="address">Address: </label>
         <input type="text" name="address" id="address">
         <br>
-        <label for="birthday">Birthday: </label>
-        <input type="date" name="birthday" id="birthday">
+        <label for="birthdate">Birthday: </label>
+        <input type="date" name="birthdate" id="birthdate">
         <br>
         <input type="submit" value="Add Contact">
     </form>

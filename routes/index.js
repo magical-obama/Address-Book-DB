@@ -21,14 +21,14 @@ router.get('/about', function (_req, res) {
     res.render('about');
 });
 
-router.get('/add_contact', function (_req, res) {
+router.get('/add_contact', (_req, res) => {
     res.render('add-contact');
 });
 
 router.post('/add_contact', (req, res) => {
     var user = new ContactModel(req.body);
     if (user.name != "") {
-        console.log(user);
+        // console.log(user);
         db.collection('contacts').insertOne(user, (err, result) => {
             if (err) {
                 console.error('An error has occurred');
@@ -41,6 +41,17 @@ router.post('/add_contact', (req, res) => {
         res.send({
             message: "Empty name"
         });
+    }
+});
+
+router.get('/view_contacts', async (_req, res) => {
+    var contacts = await db.collection('contacts').find().toArray();
+    // console.log(contacts);
+    if (contacts.length != 0) {
+        res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+        res.render('view-contacts', { contacts: contacts });
+    } else {
+        res.render('500');
     }
 });
 

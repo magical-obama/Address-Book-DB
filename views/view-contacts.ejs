@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%- include('partials/head.ejs') %> 
+    <link rel="stylesheet" href="/css/view-contacts.css">
+    <title>View Contacts</title>
+</head>
+<body>
+    <h1>Your Contacts!</h1>
+    <% contacts.forEach(element => { %>
+        <div class="contact-container">
+            <h2>Name: <%= element.name %></h2>
+            <p>Phone Number: <a href="tel:<%= element.phonenumber %>"><%= element.phonenumber %></a></p>
+            <p>Email: <a href="mailto:<%= element.email %>"><%= element.email %></a></p>
+            <p>Address: <%= element.address %></p>
+            <p>Birthdate: <%= element.birthdate %></p>
+        </div>
+    <% }); %>
+</body>
+</html>
