@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <%= await include('./partials/head.ejs') %>
+    <%- include('./partials/head.ejs') %>
     <link rel="stylesheet" href="/css/view-customers.css">
-    <title>View Contacts</title>
+    <title>View Customers</title>
 </head>
 <body>
     <% customers.forEach((item, index) => { %>
@@ -11,7 +11,11 @@
             <h2><%= item.name %></h2>
             <p><%= item.username %></p>
             <p><%= item.address %></p>
-            <p><%= item.accounts %></p>
+            <ul>
+                <% item.accounts.forEach((accItem, index) => { %>
+                    <li><%= accItem %></li>
+                <% }) %>
+            </ul>
             <p><%= item.email %></p>
             <p><%= item.birthdate %></p>
         </div>

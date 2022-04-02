@@ -7,7 +7,6 @@ const CustomerSchema = new mongoose.Schema({
     birthdate: Date,
     email: String,
     accounts: Array,
-    tier_and_details: Object
 });
 
 const Customer = mongoose.model('Customer', CustomerSchema);

@@ -38,17 +38,12 @@ router.post('/add_contact', (req, res) => {
 });
 
 router.get('/view_customers', async function (_req, res) {
-    var customers = [];
-    db.collection('customers').find().toArray(function (err, result) {
-        if (err) {
-            console.error('An error has occurred');
-        } else {
-            customers = result;
-        }
-    });
-    //res.render('index');
-    const html = await ejs.renderFile(path.join(__dirname, '../views/view-customers.ejs'), { customers: customers }, { async: true });
-    res.send(html);
+    var customers = await db.collection('customers').find().toArray();
+    if (customers.length != 0) {
+        res.render('view-customers', { customers: customers });
+    } else {
+        res.render('500');
+    }
 });
 
 

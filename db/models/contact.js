@@ -18,7 +18,7 @@ const ContactSchema = new mongoose.Schema({
         type: String,
         required: false
     },
-    birthday: {
+    birthdate: {
         type: Date,
         required: false
     }
