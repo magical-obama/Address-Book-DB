@@ -6,7 +6,17 @@
     <title>Homepage</title>
 </head>
 <body>
-    <h1>This is the <em>Homepage</em></h1>
-    <a href="/view_customers">View Customers</a>
+    <h1>This is the <em>Homepage</em> of the Address Book</h1>
+    <h2>Statistics</h2>
+    <ul>
+        <li>Number of Contacts: <%= contactCount %></li>
+    </ul>
+    <% if(contactCount != 0) { %>
+        <a href="/view_contacts">View your contacts</a>
+        <button id="delete-all-contacts-button">Delete all Contacts</button>
+    <% } %>
+    <a href="/add_contact">Add a new Contact!</a>
+    <script src="/js/index.js"></script>
+    <%- include('partials/footer.ejs') %>
 </body>
 </html>

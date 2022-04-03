@@ -4,10 +4,10 @@ const errorhandler = require('errorhandler');
 const cookieParser = require('cookie-parser');
 const csrf = require('csurf');
 const bodyParser = require('body-parser');
-// const helmet = require('helmet');
+const helmet = require('helmet');
 const indexRouter = require('./routes/index');
 const testRouter = require('./routes/test');
-const mongoose = require('mongoose');
+// const mongoose = require('mongoose');
 require('./db/connect');
 const app = express();
 
@@ -21,7 +21,7 @@ app.set('view engine', 'ejs');
 app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
-// app.use(helmet());
+app.use(helmet());
 app.use('/', express.static(path.join(__dirname, "public")));
 
 if (process.env.NODE_ENV === 'development') {

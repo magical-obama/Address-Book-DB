@@ -9,20 +9,31 @@ const db = mongoose.connection;
 
 // Home page route.
 // file deepcode ignore NoRateLimitingForExpensiveWebOperation: <please specify a reason of ignoring this>
-router.get('/', function (req, res) {
-    var title = "Homepage";
-    if (req.query.title) {
-        title = req.query.title;
+router.get('/', async (_req, res) => {
+    var contactCount = await db.collection('contacts').countDocuments();
+    if (contactCount == 0) {
+        res.render("index", { contactCount: contactCount, message: "No contacts found." });
+    } else {
+        res.render("index", { contactCount: contactCount });
     }
-    res.render("index", { title: title});
 });
 
 router.get('/about', function (_req, res) {
     res.render('about');
 });
 
-router.get('/add_contact', (_req, res) => {
-    res.render('add-contact');
+router.get('/add_contact', (req, res) => {
+    console.log(req.query);
+    if (req.query.success != undefined) {
+        console.log("Success Message");
+        res.render('add-contact', { message: "Successfully added contact." });
+    } else if (req.query.error != undefined) {
+        console.log("Error message");
+        res.render('add-contact', { message: "Error adding contact." });
+    } else {
+        console.log("No message");
+        res.render('add-contact');
+    }
 });
 
 router.post('/add_contact', (req, res) => {
@@ -36,11 +47,9 @@ router.post('/add_contact', (req, res) => {
                 console.log("Added new contact");
             }
         });
-        res.redirect('/add_contact');
+        res.redirect('/add_contact?success');
     } else {
-        res.send({
-            message: "Empty name"
-        });
+        res.redirect('/add_contact?error');
     }
 });
 
@@ -50,6 +59,22 @@ router.get('/view_contacts', async (_req, res) => {
     if (contacts.length != 0) {
         res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
         res.render('view-contacts', { contacts: contacts });
+    } else {
+        res.render('500');
+    }
+});
+
+router.post('/delete_all_contacts', async (_req, res) => {
+    var contacts = await db.collection('contacts').find().toArray();
+    if (contacts.length != 0) {
+        db.collection('contacts').deleteMany({}, (err, result) => {
+            if (err) {
+                console.error('An error has occurred');
+            } else {
+                console.log("Deleted all contacts");
+            }
+        });
+        res.redirect('/');
     } else {
         res.render('500');
     }
