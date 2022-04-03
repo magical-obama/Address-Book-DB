@@ -38,7 +38,7 @@ router.post('/add', (req, res) => {
     var contact = new ContactModel(req.body);
     if (contact.name != "") {
         // console.log(user);
-        db.collection('contacts').insertOne(contact, (err, result) => {
+        db.collection('contacts').insertOne(contact, (err, _result) => {
             if (err) {
                 handleError("Adding Contact failed on POST", err);
             } else {
@@ -54,7 +54,7 @@ router.post('/add', (req, res) => {
 router.post('/delete_all', async (_req, res) => {
     var contacts = await db.collection('contacts').find().toArray();
     if (contacts.length != 0) {
-        db.collection('contacts').deleteMany({}, (err, result) => {
+        db.collection('contacts').deleteMany({}, (err, _result) => {
             if (err) {
                 handleError("Deleting all contacts failed on POST", err);
             } else {
@@ -75,7 +75,7 @@ router.get('/:id/edit', async (req, res) => {
     // console.log(contact.birthdate);
     if (req.query.success != undefined) {
         // console.log("Success Message");
-        res.render('edit-contact', { contact: contact, message: "Successfully edited contact." });
+            res.render('edit-contact', { contact: contact, message: "Successfully edited contact." });
     }
     res.render('edit-contact', { contact: contact });
 });
@@ -83,20 +83,21 @@ router.get('/:id/edit', async (req, res) => {
 router.post('/:id/update', async (req, res) => {
     var sanitizedId = new mongoose.Types.ObjectId(req.params.id);
     // deepcode ignore Sqli: <please specify a reason of ignoring this>
-    db.collection('contacts').updateOne({ _id: sanitizedId }, { $set: req.body }, (err, result) => {
-        if (err) {
-            handleError("Updating contact failed on POST", err);
-        } else {
-            console.log("Updated contact");
-        }
-    });
+    // db.collection('contacts').updateOne({ _id: sanitizedId }, { $set: req.body }, (err, result) => {
+    //     if (err) {
+    //         handleError("Updating contact failed on POST", err);
+    //     } else {
+    //         console.log("Updated contact");
+    //     }
+    // });
+    await db.collection('contacts').updateOne({ _id: sanitizedId }, { $set: req.body });
     res.redirect('/contacts/' + sanitizedId + '/edit?success');
 });
 
 router.post('/:id/delete', (req, res) => {
     var sanitizedId = new mongoose.Types.ObjectId(req.params.id);
     // deepcode ignore Sqli: <please specify a reason of ignoring this>
-    db.collection('contacts').deleteOne({ _id: sanitizedId }, (err, result) => {
+    db.collection('contacts').deleteOne({ _id: sanitizedId }, (err, _result) => {
         if (err) {
             handleError("Deleting contact failed on POST", err);
         } else {

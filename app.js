@@ -11,6 +11,8 @@ const handleError = require('./error-handler');
 // const mongoose = require('mongoose');
 require('./db/connect');
 const app = express();
+// Debug
+// require('better-stack-traces').register();
 
 // var csrfProtection = csrf({ cookie: true });
 
@@ -20,7 +22,9 @@ const PORT = process.env.PORT || 80;
 app.set('view engine', 'ejs');
 
 app.use((req, res, next) => {
-  res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+  if (res.type === 'text/html') {
+    res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+  }
   next();
 });
 
@@ -30,9 +34,9 @@ app.use(bodyParser.json());
 // app.use(helmet());
 app.use('/', express.static(path.join(__dirname, "public")));
 
-if (process.env.NODE_ENV === 'development') {
-    app.use(errorhandler());
-}
+// if (process.env.NODE_ENV === 'development') {
+//     app.use(errorhandler());
+// }
 
 // app.use(csrfProtection);
 
@@ -47,7 +51,7 @@ app.use('/contacts', contactRouter);
 
 // 404 error handler
 // file deepcode ignore NoRateLimitingForExpensiveWebOperation: <please specify a reason of ignoring this>
-app.use(function (req, res, _next) {
+app.use(function (err, req, res, _next) {
     res.status(404);
 
   // respond with html page
@@ -67,7 +71,7 @@ app.use(function (req, res, _next) {
 
   // default to plain-text.send()
   res.type('txt').send('Not found');
-  handleError("404 error");
+  handleError("404 error", err);
 });
 
 app.listen(PORT, () => {
