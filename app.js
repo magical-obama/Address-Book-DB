@@ -7,7 +7,7 @@ const bodyParser = require('body-parser');
 const helmet = require('helmet');
 const indexRouter = require('./routes/index');
 const contactRouter = require('./routes/contacts');
-const testRouter = require('./routes/test');
+const handleError = require('./error-handler');
 // const mongoose = require('mongoose');
 require('./db/connect');
 const app = express();
@@ -44,7 +44,6 @@ if (process.env.NODE_ENV === 'development') {
 
 app.use('/', indexRouter);
 app.use('/contacts', contactRouter);
-app.use('/test', testRouter);
 
 // 404 error handler
 // file deepcode ignore NoRateLimitingForExpensiveWebOperation: <please specify a reason of ignoring this>
@@ -68,6 +67,7 @@ app.use(function (req, res, _next) {
 
   // default to plain-text.send()
   res.type('txt').send('Not found');
+  handleError("404 error");
 });
 
 app.listen(PORT, () => {

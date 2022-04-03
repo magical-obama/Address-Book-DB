@@ -5,11 +5,11 @@ const mongoose = require('mongoose');
 const db = mongoose.connection;
 const ContactModel = require('../db/models/contact');
 const moment = require('moment');
+const handleError = require('../error-handler');
 
 router.get('/', async (_req, res) => {
     var contacts = await db.collection('contacts').find().toArray();
     if (contacts.length != 0) {
-        res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
         contacts.forEach(contact => {
             contact.birthdate = moment(contact.birthdate).format('MMMM Do YYYY');
         });
@@ -20,15 +20,16 @@ router.get('/', async (_req, res) => {
 });
 
 router.get('/add', (req, res) => {
-    console.log(req.query);
+    // console.log(req.query);
     if (req.query.success != undefined) {
-        console.log("Success Message");
+        // console.log("Success Message");
         res.render('add-contact', { message: "Successfully added contact." });
     } else if (req.query.error != undefined) {
-        console.log("Error message");
+        // console.log("Error message");
+        handleError("Adding Contact failed on GET");
         res.render('add-contact', { message: "Error adding contact." });
     } else {
-        console.log("No message");
+        // console.log("No message");
         res.render('add-contact');
     }
 });
@@ -39,7 +40,7 @@ router.post('/add', (req, res) => {
         // console.log(user);
         db.collection('contacts').insertOne(contact, (err, result) => {
             if (err) {
-                console.error('An error has occurred');
+                handleError("Adding Contact failed on POST", err);
             } else {
                 console.log("Added new contact");
             }
@@ -55,7 +56,7 @@ router.post('/delete_all', async (_req, res) => {
     if (contacts.length != 0) {
         db.collection('contacts').deleteMany({}, (err, result) => {
             if (err) {
-                console.error('An error has occurred');
+                handleError("Deleting all contacts failed on POST", err);
             } else {
                 console.log("Deleted all contacts");
             }
@@ -73,7 +74,7 @@ router.get('/:id/edit', async (req, res) => {
     contact.birthdate = moment(contact.birthdate).format("YYYY-MM-DD");
     // console.log(contact.birthdate);
     if (req.query.success != undefined) {
-        console.log("Success Message");
+        // console.log("Success Message");
         res.render('edit-contact', { contact: contact, message: "Successfully edited contact." });
     }
     res.render('edit-contact', { contact: contact });
@@ -84,12 +85,12 @@ router.post('/:id/update', async (req, res) => {
     // deepcode ignore Sqli: <please specify a reason of ignoring this>
     db.collection('contacts').updateOne({ _id: sanitizedId }, { $set: req.body }, (err, result) => {
         if (err) {
-            console.error('An error has occurred');
+            handleError("Updating contact failed on POST", err);
         } else {
             console.log("Updated contact");
         }
     });
-    res.redirect('/contacts/' + req.params.id + '/edit?success');
+    res.redirect('/contacts/' + sanitizedId + '/edit?success');
 });
 
 router.post('/:id/delete', (req, res) => {
@@ -97,7 +98,7 @@ router.post('/:id/delete', (req, res) => {
     // deepcode ignore Sqli: <please specify a reason of ignoring this>
     db.collection('contacts').deleteOne({ _id: sanitizedId }, (err, result) => {
         if (err) {
-            console.error('An error has occurred');
+            handleError("Deleting contact failed on POST", err);
         } else {
             console.log("Deleted contact");
         }
