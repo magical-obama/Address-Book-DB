@@ -19,10 +19,15 @@ const PORT = process.env.PORT || 80;
 
 app.set('view engine', 'ejs');
 
+app.use((req, res, next) => {
+  res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+  next();
+});
+
 app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
-app.use(helmet());
+// app.use(helmet());
 app.use('/', express.static(path.join(__dirname, "public")));
 
 if (process.env.NODE_ENV === 'development') {

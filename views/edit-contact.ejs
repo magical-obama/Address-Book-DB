@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%- include('partials/head.ejs') %> 
+    <title>Edit Contact: <%= contact.name %></title>
+</head>
+<body>
+    <a href="/contacts">Back to the Contacts</a>
+    <form action="/contacts/<%= contact._id %>/update" method="post">
+        <label for="name">Name:</label>
+        <input type="text" name="name" id="name" value="<%= contact.name %>">
+        <br>
+        <label for="email">Email:</label>
+        <input type="email" name="email" id="email" value="<%= contact.email %>">
+        <br>
+        <label for="phonenumber">Phone:</label>
+        <input type="tel" name="phonenumber" id="phonenumber" value="<%= contact.phonenumber %>">
+        <br>
+        <label for="address">Address: </label>
+        <input type="text" name="address" id="address" value="<%= contact.address %>">
+        <br>
+        <label for="birthdate">Birthday: </label>
+        <input type="date" name="birthdate" id="birthdate" value="<%= contact.birthdate %>">
+        <br>
+        <input type="submit" value="Update Contact">
+    </form>
+    <%- include('partials/footer.ejs') %>
+</body>
+</html>

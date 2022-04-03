@@ -15,8 +15,11 @@
             <p>Email: <a href="mailto:<%= element.email %>"><%= element.email %></a></p>
             <p>Address: <%= element.address %></p>
             <p>Birthdate: <%= element.birthdate %></p>
+            <a href="/contacts/<%= element._id %>/edit">Edit</a>
+            <button onclick="deleteContact('<%= element._id %>')">Delete</button>
         </div>
     <% }); %>
     <%- include('partials/footer.ejs') %>
+    <script src="/js/view-contacts.js"></script>
 </body>
 </html>

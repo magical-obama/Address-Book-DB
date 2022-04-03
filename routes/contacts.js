@@ -4,14 +4,18 @@ const router = express.Router();
 const mongoose = require('mongoose');
 const db = mongoose.connection;
 const ContactModel = require('../db/models/contact');
+const moment = require('moment');
 
 router.get('/', async (_req, res) => {
     var contacts = await db.collection('contacts').find().toArray();
     if (contacts.length != 0) {
         res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+        contacts.forEach(contact => {
+            contact.birthdate = moment(contact.birthdate).format('MMMM Do YYYY');
+        });
         res.render('view-contacts', { contacts: contacts });
     } else {
-        res.render('500');
+        res.render('view-contacts', { contacts: contacts, message: "No contacts found." });
     }
 });
 
@@ -61,5 +65,45 @@ router.post('/delete_all', async (_req, res) => {
         res.render('500');
     }
 });
+
+router.get('/:id/edit', async (req, res) => {
+    var sanitizedId = new mongoose.Types.ObjectId(req.params.id);
+    // deepcode ignore Sqli: Not true
+    var contact = await db.collection('contacts').findOne({ _id: sanitizedId });
+    contact.birthdate = moment(contact.birthdate).format("YYYY-MM-DD");
+    // console.log(contact.birthdate);
+    if (req.query.success != undefined) {
+        console.log("Success Message");
+        res.render('edit-contact', { contact: contact, message: "Successfully edited contact." });
+    }
+    res.render('edit-contact', { contact: contact });
+});
+
+router.post('/:id/update', async (req, res) => {
+    var sanitizedId = new mongoose.Types.ObjectId(req.params.id);
+    // deepcode ignore Sqli: <please specify a reason of ignoring this>
+    db.collection('contacts').updateOne({ _id: sanitizedId }, { $set: req.body }, (err, result) => {
+        if (err) {
+            console.error('An error has occurred');
+        } else {
+            console.log("Updated contact");
+        }
+    });
+    res.redirect('/contacts/' + req.params.id + '/edit?success');
+});
+
+router.post('/:id/delete', (req, res) => {
+    var sanitizedId = new mongoose.Types.ObjectId(req.params.id);
+    // deepcode ignore Sqli: <please specify a reason of ignoring this>
+    db.collection('contacts').deleteOne({ _id: sanitizedId }, (err, result) => {
+        if (err) {
+            console.error('An error has occurred');
+        } else {
+            console.log("Deleted contact");
+        }
+    });
+    res.redirect('/contacts');
+});
+
 
 module.exports = router;
