@@ -16,7 +16,7 @@ app.set('view engine', 'ejs');
 
 app.use((req, res, next) => {
   if (res.type === 'text/html') {
-    res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+    res.setHeader("Cache-Control", "0");
   }
   next();
 });

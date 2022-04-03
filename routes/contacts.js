@@ -7,29 +7,31 @@ const ContactModel = require('../db/models/contact');
 const moment = require('moment');
 const handleError = require('../error-handler');
 
-router.get('/', async (_req, res) => {
-    var contacts = await db.collection('contacts').find().toArray();
-    if (contacts.length != 0) {
-        contacts.forEach(contact => {
-            contact.birthdate = moment(contact.birthdate).format('MMMM Do YYYY');
-        });
-        res.render('view-contacts', { contacts: contacts });
-    } else {
-        res.render('view-contacts', { contacts: contacts, message: "No contacts found." });
-    }
+router.get('/', (_req, res) => {
+    db.collection('contacts').find().toArray((err, contacts) => {
+        if (err) {
+            handleError("500 error", err);
+            res.render('500');
+        } else {
+            if (contacts.length != 0) {
+                contacts.forEach(contact => {
+                    contact.birthdate = moment(contact.birthdate).format('MMMM Do YYYY');
+                });
+                res.render('view-contacts', { contacts: contacts });
+            } else {
+                res.render('view-contacts', { contacts: contacts, message: "No contacts found." });
+            }
+        }
+    });
 });
 
 router.get('/add', (req, res) => {
-    // console.log(req.query);
     if (req.query.success != undefined) {
-        // console.log("Success Message");
         res.render('add-contact', { message: "Successfully added contact." });
     } else if (req.query.error != undefined) {
-        // console.log("Error message");
         handleError("Adding Contact failed on GET");
         res.render('add-contact', { message: "Error adding contact." });
     } else {
-        // console.log("No message");
         res.render('add-contact');
     }
 });
@@ -37,12 +39,11 @@ router.get('/add', (req, res) => {
 router.post('/add', (req, res) => {
     var contact = new ContactModel(req.body);
     if (contact.name != "") {
-        // console.log(user);
-        db.collection('contacts').insertOne(contact, (err, _result) => {
+        db.collection('contacts').insertOne(contact, (err, result) => {
             if (err) {
                 handleError("Adding Contact failed on POST", err);
             } else {
-                console.log("Added new contact");
+                console.log("Added new contact:" + result.insertedId);
             }
         });
         res.redirect('/contacts/add?success');
@@ -51,61 +52,87 @@ router.post('/add', (req, res) => {
     }
 });
 
-router.post('/delete_all', async (_req, res) => {
-    var contacts = await db.collection('contacts').find().toArray();
-    if (contacts.length != 0) {
-        db.collection('contacts').deleteMany({}, (err, _result) => {
-            if (err) {
-                handleError("Deleting all contacts failed on POST", err);
+router.post('/delete_all', (_req, res) => {
+    db.collection('contacts').find().toArray((err, contacts) => {
+        if (err) {
+            handleError("500 error", err);
+            res.render('500');
+        } else {
+            if (contacts.length != 0) {
+                db.collection('contacts').deleteMany({}, (mongoErr, _result) => {
+                    if (mongoErr) {
+                        handleError("Deleting all contacts failed on POST", mongoErr);
+                    } else {
+                        console.log("Deleted all contacts");
+                    }
+                });
+                res.redirect('/');
             } else {
-                console.log("Deleted all contacts");
+                res.render('500');
             }
-        });
-        res.redirect('/');
-    } else {
-        res.render('500');
-    }
+        }
+    });
 });
 
-router.get('/:id/edit', async (req, res) => {
+router.get('/:id/edit', (req, res) => {
     var sanitizedId = new mongoose.Types.ObjectId(req.params.id);
-    // deepcode ignore Sqli: Not true
-    var contact = await db.collection('contacts').findOne({ _id: sanitizedId });
-    contact.birthdate = moment(contact.birthdate).format("YYYY-MM-DD");
-    // console.log(contact.birthdate);
-    if (req.query.success != undefined) {
-        // console.log("Success Message");
-            res.render('edit-contact', { contact: contact, message: "Successfully edited contact." });
-    }
-    res.render('edit-contact', { contact: contact });
+    db.collection('contacts').findOne({ _id: sanitizedId }, (err, contact) => {
+        if (err) {
+            handleError("Editing contact failed on GET", err);
+        } else {
+            contact.birthdate = moment(contact.birthdate).format("YYYY-MM-DD");
+            if (req.query.success != undefined) {
+                res.render('edit-contact', { contact: contact, message: "Successfully edited contact." });
+            } else {
+                res.render('edit-contact', { contact: contact });
+            }
+        }
+    });
 });
 
-router.post('/:id/update', async (req, res) => {
+router.post('/:id/update', (req, res) => {
     var sanitizedId = new mongoose.Types.ObjectId(req.params.id);
-    // deepcode ignore Sqli: <please specify a reason of ignoring this>
-    // db.collection('contacts').updateOne({ _id: sanitizedId }, { $set: req.body }, (err, result) => {
-    //     if (err) {
-    //         handleError("Updating contact failed on POST", err);
-    //     } else {
-    //         console.log("Updated contact");
-    //     }
-    // });
-    await db.collection('contacts').updateOne({ _id: sanitizedId }, { $set: req.body });
-    res.redirect('/contacts/' + sanitizedId + '/edit?success');
+    db.collection('contacts').updateOne({ _id: sanitizedId }, { $set: req.body }, (err, _result) => {
+        if (err) {
+            handleError("Updating contact failed on POST", err);
+            res.redirect('/contacts/' + sanitizedId + '/edit?error');
+        } else {
+            console.log("Updated contact: " + sanitizedId);
+            res.redirect('/contacts/' + sanitizedId + '/edit?success');
+        }
+    });
 });
 
 router.post('/:id/delete', (req, res) => {
     var sanitizedId = new mongoose.Types.ObjectId(req.params.id);
-    // deepcode ignore Sqli: <please specify a reason of ignoring this>
-    db.collection('contacts').deleteOne({ _id: sanitizedId }, (err, _result) => {
+    db.collection('contacts').deleteOne({ _id: sanitizedId }, (err, result) => {
         if (err) {
-            handleError("Deleting contact failed on POST", err);
+            handleError("Deleting Contact failed on POST", err);
+            res.render('500');
         } else {
-            console.log("Deleted contact");
+            console.log("Deleted Contact:", result.deletedCount);
         }
     });
     res.redirect('/contacts');
 });
 
+router.get('/search', (req, res) => {
+    var search = req.query.q;
+    if (search === undefined) {
+        search = "";
+    }
+    // deepcode ignore Sqli: <please specify a reason of ignoring this>
+    db.collection('contacts').find({ name: { $regex: search, $options: 'i' } }).toArray((err, contacts) => {
+        if (err) {
+            handleError("Searching contacts failed on GET", err);
+            res.render('500');
+        } else {
+            contacts.forEach(contact => {
+                contact.birthdate = moment(contact.birthdate).format('MMMM Do YYYY');
+            });
+            res.render('search-result', { contacts: contacts });
+        }
+    });
+});
 
 module.exports = router;
