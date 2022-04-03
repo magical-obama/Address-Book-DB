@@ -2,10 +2,11 @@ const express = require('express');
 const path = require('path');
 const errorhandler = require('errorhandler');
 const cookieParser = require('cookie-parser');
-const csrf = require('csurf');
+// const csrf = require('csurf');
 const bodyParser = require('body-parser');
 const helmet = require('helmet');
 const indexRouter = require('./routes/index');
+const contactRouter = require('./routes/contacts');
 const testRouter = require('./routes/test');
 // const mongoose = require('mongoose');
 require('./db/connect');
@@ -29,7 +30,15 @@ if (process.env.NODE_ENV === 'development') {
 }
 
 // app.use(csrfProtection);
+
+
+// app.use((req, res, next) => {
+//     res.locals.csrfToken = req.csrfToken();
+//     next();
+// });
+
 app.use('/', indexRouter);
+app.use('/contacts', contactRouter);
 app.use('/test', testRouter);
 
 // 404 error handler

@@ -12,10 +12,10 @@
         <li>Number of Contacts: <%= contactCount %></li>
     </ul>
     <% if(contactCount != 0) { %>
-        <a href="/view_contacts">View your contacts</a>
+        <a href="/contacts">View your contacts</a>
         <button id="delete-all-contacts-button">Delete all Contacts</button>
     <% } %>
-    <a href="/add_contact">Add a new Contact!</a>
+    <a href="/contacts/add">Add a new Contact!</a>
     <script src="/js/index.js"></script>
     <%- include('partials/footer.ejs') %>
 </body>

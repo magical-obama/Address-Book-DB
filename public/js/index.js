@@ -2,7 +2,7 @@ const deleteAllButton = document.getElementById('delete-all-contacts-button');
 if (deleteAllButton) {
     deleteAllButton.addEventListener('click', () => {
         if (confirm('Are you sure you want to delete all contacts?')) {
-            fetch('/delete_all_contacts', {
+            fetch('/contacts/delete_all', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
