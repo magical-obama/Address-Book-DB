@@ -7,6 +7,8 @@ const indexRouter = require('./routes/index');
 const contactRouter = require('./routes/contacts');
 const handleError = require('./error-handler');
 require('./db/connect');
+const pages = require('./routes/pages');
+
 const app = express();
 
 require("dotenv").config();
@@ -60,3 +62,5 @@ app.use(function (err, req, res, _next) {
 app.listen(PORT, () => {
     console.log(`Listening on http://localhost:${PORT}`);
 });
+
+// what is happening here?
