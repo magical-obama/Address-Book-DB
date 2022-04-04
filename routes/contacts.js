@@ -3,10 +3,12 @@ const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
 const db = mongoose.connection;
-const ContactModel = require('../db/models/contact');
+const Contact = require('../db/models/contact');
 const moment = require('moment');
 const handleError = require('../error-handler');
+const { body, validationResult } = require('express-validator');
 
+/**
 router.get('/', (_req, res) => {
     db.collection('contacts').find().toArray((err, contacts) => {
         if (err) {
@@ -24,34 +26,89 @@ router.get('/', (_req, res) => {
         }
     });
 });
+*/
+
+router.get('/', (_req, res) => {
+    db.collection('contacts').find().toArray((err, contacts) => {
+        if (err) {
+            handleError("500 error", err);
+            res.render('500', { message: err});
+        } else {
+            if (contacts.length != 0) {
+                contacts.forEach(contact => {
+                    contact.birthdate = moment(contact.birthdate).format('MMMM Do YYYY');
+                });
+                res.render('view-contacts', { contacts: contacts });
+            } else {
+                res.render('view-contacts', { contacts: contacts, message: "No contacts found." });
+            }
+        }
+    });
+});
 
 router.get('/add', (req, res) => {
     if (req.query.success != undefined) {
         res.render('add-contact', { message: "Successfully added contact." });
     } else if (req.query.error != undefined) {
-        handleError("Adding Contact failed on GET");
         res.render('add-contact', { message: "Error adding contact." });
     } else {
         res.render('add-contact');
     }
 });
 
-router.post('/add', (req, res) => {
-    var contact = new ContactModel(req.body);
-    if (contact.name != "") {
-        db.collection('contacts').insertOne(contact, (err, result) => {
-            if (err) {
-                handleError("Adding Contact failed on POST", err);
-            } else {
-                console.log("Added new contact:" + result.insertedId);
-            }
-        });
-        res.redirect('/contacts/add?success');
-    } else {
-        res.redirect('/contacts/add?error');
+/**
+router.post('/add',
+    body('name').isAlpha().withMessage('Name must be alphabetic.'),
+    body('email').isEmail().normalizeEmail().withMessage('Email must be valid.'),
+    body('birthdate').isISO8601().withMessage('Birthdate must be valid.'),
+    (req, res) => {
+        var contact = new ContactModel(req.body);
+        if (contact.name != "") {
+            db.collection('contacts').insertOne(contact, (err, result) => {
+                if (err) {
+                    handleError("Adding Contact failed on POST", err);
+                } else {
+                    console.log("Added new contact:" + result.insertedId);
+                }
+            });
+            res.redirect('/contacts/add?success');
+        } else {
+            res.redirect('/contacts/add?error');
+        }
     }
-});
+);
+*/
 
+router.post('/add',
+    body('name').isAlpha().withMessage('Name must be alphabetic.'),
+    body('email').isEmail().normalizeEmail().withMessage('Email must be valid.'),
+    body('birthdate').isISO8601().withMessage('Birthdate must be valid.'),
+    (req, res) => {
+        const validationErrors = validationResult(req);
+        if (!validationErrors.isEmpty()) {
+            res.redirect('/contacts/add?error');
+        } else {
+            Contact.create({
+                name: req.body.name,
+                email: req.body.email,
+                address: req.body.address,
+                birthdate: req.body.birthdate
+            }, (contactErr, contact) => {
+                db.collection('contacts').insertOne(contact, (dbErr, result) => {
+                    if (dbErr) {
+                        handleError("Adding Contact failed on POST", dbErr);
+                        res.redirect('/contacts/add?error');
+                    } else {
+                        console.log("Added new contact:" + result.insertedId);
+                        res.redirect('/contacts/add?success');
+                    }
+                });
+            });
+        }
+    }
+);
+
+/**
 router.post('/delete_all', (_req, res) => {
     db.collection('contacts').find().toArray((err, contacts) => {
         if (err) {
@@ -73,7 +130,26 @@ router.post('/delete_all', (_req, res) => {
         }
     });
 });
+*/
 
+router.post('/delete_all', (_req, res) => {	
+    Contact.deleteMany({}, (err, _result) => {
+        if (err) {
+            handleError("Deleting all contacts failed on POST", err);
+            res.send({
+                error: "Deleting all contacts failed on POST",
+                err: err
+            });
+        } else {
+            console.log("Deleted all contacts");
+            res.send({
+                success: "Deleted all contacts"
+            });
+        }
+    });
+});
+
+/**
 router.get('/:id/edit', (req, res) => {
     var sanitizedId = new mongoose.Types.ObjectId(req.params.id);
     db.collection('contacts').findOne({ _id: sanitizedId }, (err, contact) => {
@@ -86,6 +162,22 @@ router.get('/:id/edit', (req, res) => {
             } else {
                 res.render('edit-contact', { contact: contact });
             }
+        }
+    });
+});
+*/
+
+router.get(':id/edit', (req, res) => {
+    Contact.findById(req.params.id, (err, contact) => {
+        if (err) {
+            handleError("Editing contact failed on GET", err);
+            res.send({
+                error: "Editing contact failed on GET",
+                err: err
+            });
+        } else {
+            console.log("Found contact:" + contact);
+            res.render('edit-contact', { contact: contact });
         }
     });
 });

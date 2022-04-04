@@ -11,11 +11,13 @@
     <ul>
         <li>Number of Contacts: <%= contactCount %></li>
     </ul>
-    <% if(contactCount != 0) { %>
-        <a href="/contacts">View your contacts</a>
-        <button id="delete-all-contacts-button">Delete all Contacts</button>
-    <% } %>
-    <a href="/contacts/add">Add a new Contact!</a>
+    <div class="link-container">
+        <% if(contactCount != 0) { %>
+            <a href="/contacts"><button >View your contacts</button></a>
+            <button id="delete-all-contacts-button">Delete all Contacts</button>
+        <% } %>
+        <a href="/contacts/add"><button>Add a new Contact!</button></a>
+    </div>
     <%- include('partials/search.ejs') %>
     <script src="/js/index.js"></script>
     <script src="/js/search.js"></script>
