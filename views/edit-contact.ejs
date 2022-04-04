@@ -6,6 +6,7 @@
 </head>
 <body>
     <a href="/contacts">Back to the Contacts</a>
+    <h1>Editing the Contact</h1>
     <form action="/contacts/<%= contact._id %>/update" method="post">
         <label for="name">Name:</label>
         <input type="text" name="name" id="name" value="<%= contact.name %>">
@@ -19,7 +20,7 @@
         <label for="address">Address: </label>
         <input type="text" name="address" id="address" value="<%= contact.address %>">
         <br>
-        <label for="birthdate">Birthday: </label>
+        <label for="birthday">Birthday: </label>
         <input type="date" name="birthdate" id="birthdate" value="<%= contact.birthdate %>">
         <br>
         <input type="submit" value="Update Contact">

@@ -8,6 +8,16 @@ const moment = require('moment');
 const handleError = require('../error-handler');
 const { body, validationResult } = require('express-validator');
 
+function validateContact(req, res, next) {
+    body('name').isLength({ min: 1 }).trim().escape();
+    body('email').isEmail().normalizeEmail().trim().escape();
+    body('address').isLength({ min: 1 }).trim().escape();
+    body('phonenumber').isMobilePhone().trim().escape();
+    body('birthday').isISO8601().trim().escape();
+    next();
+}
+
+
 /**
 router.get('/', (_req, res) => {
     db.collection('contacts').find().toArray((err, contacts) => {
@@ -17,7 +27,7 @@ router.get('/', (_req, res) => {
         } else {
             if (contacts.length != 0) {
                 contacts.forEach(contact => {
-                    contact.birthdate = moment(contact.birthdate).format('MMMM Do YYYY');
+                    contact.birthday = moment(contact.birthday).format('MMMM Do YYYY');
                 });
                 res.render('view-contacts', { contacts: contacts });
             } else {
@@ -36,7 +46,8 @@ router.get('/', (_req, res) => {
         } else {
             if (contacts.length != 0) {
                 contacts.forEach(contact => {
-                    contact.birthdate = moment(contact.birthdate).format('MMMM Do YYYY');
+                    let contactObject = contact.toObject();
+                    contactObject.birthdate = moment(contactObject.birthdate).format("YYYY-MM-DD");
                 });
                 res.render('view-contacts', { contacts: contacts });
             } else {
@@ -60,7 +71,7 @@ router.get('/add', (req, res) => {
 router.post('/add',
     body('name').isAlpha().withMessage('Name must be alphabetic.'),
     body('email').isEmail().normalizeEmail().withMessage('Email must be valid.'),
-    body('birthdate').isISO8601().withMessage('Birthdate must be valid.'),
+    body('birthday').isISO8601().withMessage('birthday must be valid.'),
     (req, res) => {
         var contact = new ContactModel(req.body);
         if (contact.name != "") {
@@ -79,34 +90,24 @@ router.post('/add',
 );
 */
 
-router.post('/add',
-    body('name').isAlpha().withMessage('Name must be alphabetic.'),
-    body('email').isEmail().normalizeEmail().withMessage('Email must be valid.'),
-    body('birthdate').isISO8601().withMessage('Birthdate must be valid.'),
-    (req, res) => {
-        const validationErrors = validationResult(req);
-        if (!validationErrors.isEmpty()) {
-            res.redirect('/contacts/add?error');
-        } else {
-            Contact.create({
-                name: req.body.name,
-                email: req.body.email,
-                address: req.body.address,
-                birthdate: req.body.birthdate
-            }, (contactErr, contact) => {
-                db.collection('contacts').insertOne(contact, (dbErr, result) => {
-                    if (dbErr) {
-                        handleError("Adding Contact failed on POST", dbErr);
-                        res.redirect('/contacts/add?error');
-                    } else {
-                        console.log("Added new contact:" + result.insertedId);
-                        res.redirect('/contacts/add?success');
-                    }
-                });
+router.post('/add', validateContact, (req, res) => {
+    const validationErrors = validationResult(req);
+    if (!validationErrors.isEmpty()) {
+        res.redirect('/contacts/add?error');
+    } else {
+        Contact.create(req.body, (contactErr, contact) => {
+            db.collection('contacts').insertOne(contact, (dbErr, result) => {
+                if (dbErr) {
+                    handleError("Adding Contact failed on POST", dbErr);
+                    res.redirect('/contacts/add?error');
+                } else {
+                    console.log("Added new contact:" + result.insertedId);
+                    res.redirect('/contacts/add?success');
+                }
             });
-        }
+        });
     }
-);
+});
 
 /**
 router.post('/delete_all', (_req, res) => {
@@ -156,7 +157,7 @@ router.get('/:id/edit', (req, res) => {
         if (err) {
             handleError("Editing contact failed on GET", err);
         } else {
-            contact.birthdate = moment(contact.birthdate).format("YYYY-MM-DD");
+            contact.birthday = moment(contact.birthday).format("YYYY-MM-DD");
             if (req.query.success != undefined) {
                 res.render('edit-contact', { contact: contact, message: "Successfully edited contact." });
             } else {
@@ -167,7 +168,7 @@ router.get('/:id/edit', (req, res) => {
 });
 */
 
-router.get(':id/edit', (req, res) => {
+router.get('/:id/edit', (req, res) => {
     Contact.findById(req.params.id, (err, contact) => {
         if (err) {
             handleError("Editing contact failed on GET", err);
@@ -176,12 +177,15 @@ router.get(':id/edit', (req, res) => {
                 err: err
             });
         } else {
-            console.log("Found contact:" + contact);
-            res.render('edit-contact', { contact: contact });
+            var contactObject = contact.toObject();
+            contactObject.birthdate = moment(contactObject.birthdate).format("YYYY-MM-DD");
+            console.log("Found contact:" + JSON.stringify(contactObject));
+            res.render('edit-contact', { contact: contactObject });
         }
     });
 });
 
+/**
 router.post('/:id/update', (req, res) => {
     var sanitizedId = new mongoose.Types.ObjectId(req.params.id);
     db.collection('contacts').updateOne({ _id: sanitizedId }, { $set: req.body }, (err, _result) => {
@@ -193,6 +197,30 @@ router.post('/:id/update', (req, res) => {
             res.redirect('/contacts/' + sanitizedId + '/edit?success');
         }
     });
+});
+*/
+
+router.post('/:id/update', validateContact,(req, res) => {
+    const validationErrors = validationResult(req);
+    if (!validationErrors.isEmpty()) {
+        res.redirect('/contacts/' + req.params.id + '/edit?error');
+    } else {
+        Contact.create(req.body, (err, contact) => {
+            console.log("Updated contact: " + contact);
+            Contact.findByIdAndUpdate(req.params.id, contact, (queryErr, contactResult) => {
+                if (queryErr) {
+                    handleError("Updating contact failed on POST", queryErr);
+                    res.send({
+                        error: "Updating contact failed on POST",
+                        err: queryErr
+                    });
+                } else {
+                    console.log("Updated contact: " + contactResult);
+                    res.redirect('/contacts/');
+                }
+            });
+        });
+    }
 });
 
 router.post('/:id/delete', (req, res) => {
@@ -220,7 +248,7 @@ router.get('/search', (req, res) => {
             res.render('500');
         } else {
             contacts.forEach(contact => {
-                contact.birthdate = moment(contact.birthdate).format('MMMM Do YYYY');
+                contact.birthday = moment(contact.birthday).format('MMMM Do YYYY');
             });
             res.render('search-result', { contacts: contacts });
         }

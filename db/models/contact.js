@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-//the mongoose shema for a contact with name, email, phonenumber, address and birthdate
+//the mongoose shema for a contact with name, email, phonenumber, address and birthday
 const ContactSchema = new mongoose.Schema({
     name: {
         type: String,
@@ -18,7 +18,7 @@ const ContactSchema = new mongoose.Schema({
         type: String,
         required: false
     },
-    birthdate: {
+    birthday: {
         type: Date,
         required: false
     }

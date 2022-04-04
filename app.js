@@ -7,7 +7,6 @@ const indexRouter = require('./routes/index');
 const contactRouter = require('./routes/contacts');
 const handleError = require('./error-handler');
 require('./db/connect');
-const pages = require('./routes/pages');
 
 const app = express();
 
