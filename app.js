@@ -15,7 +15,7 @@ const PORT = process.env.PORT || 80;
 
 app.set('view engine', 'ejs');
 
-app.use((req, res, next) => {
+app.use((_req, res, next) => {
   if (res.type === 'text/html') {
     res.setHeader("Cache-Control", "0");
   }
@@ -61,5 +61,3 @@ app.use(function (err, req, res, _next) {
 app.listen(PORT, () => {
     console.log(`Listening on http://localhost:${PORT}`);
 });
-
-// what is happening here?

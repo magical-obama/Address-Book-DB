@@ -7,6 +7,7 @@ const Contact = require('../db/models/contact');
 const moment = require('moment');
 const handleError = require('../error-handler');
 const { body, validationResult } = require('express-validator');
+const { beautify } = require('../view-helper');
 
 function validateContact(req, res, next) {
     body('name').isLength({ min: 1 }).trim().escape();
@@ -38,6 +39,7 @@ router.get('/', (_req, res) => {
 });
 */
 
+/**
 router.get('/', (_req, res) => {
     db.collection('contacts').find().toArray((err, contacts) => {
         if (err) {
@@ -46,13 +48,41 @@ router.get('/', (_req, res) => {
         } else {
             if (contacts.length != 0) {
                 contacts.forEach(contact => {
-                    let contactObject = contact.toObject();
-                    contactObject.birthdate = moment(contactObject.birthdate).format("YYYY-MM-DD");
+                    try {
+                        let contactCopy = contact.toObject();
+                    } catch (e) {
+                        console.log("Error: " + e);
+                    }
                 });
                 res.render('view-contacts', { contacts: contacts });
             } else {
                 res.render('view-contacts', { contacts: contacts, message: "No contacts found." });
             }
+        }
+    });
+});
+ */
+
+router.get('/', (req, res) => {
+    Contact.find({}, (err, contacts) => {
+        if (err) {
+            handleError("500 error", err);
+            res.render('500', { message: err});
+        } else {
+            var contactsForView = [];
+            if (contacts.length != 0) {
+                contacts.forEach(contact => {
+                    try {
+                        contactsForView.push(beautify(contact));
+                    } catch (e) {
+                        handleError("500 error", e);
+                    }
+                });
+                res.render('view-contacts', { contacts: contactsForView });
+            } else {
+                res.render('view-contacts', { contacts: contactsForView, message: "No contacts found." });
+            }
+            // console.log(contactsForView);
         }
     });
 });
@@ -95,7 +125,7 @@ router.post('/add', validateContact, (req, res) => {
     if (!validationErrors.isEmpty()) {
         res.redirect('/contacts/add?error');
     } else {
-        Contact.create(req.body, (contactErr, contact) => {
+        Contact.create(req.body, (_contactErr, contact) => {
             db.collection('contacts').insertOne(contact, (dbErr, result) => {
                 if (dbErr) {
                     handleError("Adding Contact failed on POST", dbErr);
@@ -134,7 +164,7 @@ router.post('/delete_all', (_req, res) => {
 */
 
 router.post('/delete_all', (_req, res) => {	
-    Contact.deleteMany({}, (err, _result) => {
+    Contact.deleteMany({}, (err, result) => {
         if (err) {
             handleError("Deleting all contacts failed on POST", err);
             res.send({
@@ -144,7 +174,7 @@ router.post('/delete_all', (_req, res) => {
         } else {
             console.log("Deleted all contacts");
             res.send({
-                success: "Deleted all contacts"
+                success: "Deleted all contacts: " + result.deletedCount
             });
         }
     });
@@ -177,10 +207,9 @@ router.get('/:id/edit', (req, res) => {
                 err: err
             });
         } else {
-            var contactObject = contact.toObject();
-            contactObject.birthdate = moment(contactObject.birthdate).format("YYYY-MM-DD");
-            console.log("Found contact:" + JSON.stringify(contactObject));
-            res.render('edit-contact', { contact: contactObject });
+            let contactForView = beautify(contact);
+            console.log("Found contact:" + JSON.stringify(contactForView));
+            res.render('edit-contact', { contact: contactForView });
         }
     });
 });
@@ -225,12 +254,12 @@ router.post('/:id/update', validateContact,(req, res) => {
 
 router.post('/:id/delete', (req, res) => {
     var sanitizedId = new mongoose.Types.ObjectId(req.params.id);
-    db.collection('contacts').deleteOne({ _id: sanitizedId }, (err, result) => {
+    Contact.findByIdAndDelete(sanitizedId, (err, result) => {
         if (err) {
             handleError("Deleting Contact failed on POST", err);
             res.render('500');
         } else {
-            console.log("Deleted Contact:", result.deletedCount);
+            console.log("Deleted Contact Count:", result.deletedCount);
         }
     });
     res.redirect('/contacts');
@@ -242,11 +271,12 @@ router.get('/search', (req, res) => {
         search = "";
     }
     // deepcode ignore Sqli: <please specify a reason of ignoring this>
-    db.collection('contacts').find({ name: { $regex: search, $options: 'i' } }).toArray((err, contacts) => {
+    Contact.find({ name: { $regex: search, $options: 'i' } }).toArray((err, contacts) => {
         if (err) {
             handleError("Searching contacts failed on GET", err);
             res.render('500');
         } else {
+            var sanitizedContacts = beautify(contacts);
             contacts.forEach(contact => {
                 contact.birthday = moment(contact.birthday).format('MMMM Do YYYY');
             });
